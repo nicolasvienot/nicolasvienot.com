@@ -87,20 +87,23 @@ body {
   word-break: break-all;
 }
 
-#typed {
+#typed,
+#rest,
+.cursor {
   white-space: pre-wrap;
 }
 
 .cursor {
   display: inline-block;
-  width: 0.62em;
-  height: 1.2em;
-  vertical-align: -0.25em;
+  width: 1ch;
+  line-height: 1.2;
   background: var(--accent);
+  color: var(--bg);
 }
 
 .cursor.off {
-  opacity: 0;
+  background: transparent;
+  color: inherit;
 }
 
 #cmd {
@@ -128,6 +131,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .cursor.off {
-    opacity: 1;
+    background: var(--accent);
+    color: var(--bg);
   }
 }

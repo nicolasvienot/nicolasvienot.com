@@ -149,6 +149,7 @@ var promptEl = document.getElementById('promptline');
 var linesEl = document.getElementById('lines');
 var typedEl = document.getElementById('typed');
 var cursorEl = document.getElementById('cursor');
+var restEl = document.getElementById('rest');
 var inputEl = document.getElementById('cmd');
 
 var cmdHistory = [];
@@ -197,10 +198,18 @@ function blink() {
   blinkTimer = setInterval(function () { cursorEl.classList.toggle('off'); }, 530);
 }
 
+function draw() {
+  var v = inputEl.value;
+  var i = inputEl.selectionStart;
+  typedEl.textContent = v.slice(0, i);
+  cursorEl.textContent = v.charAt(i) || '\u00A0';
+  restEl.textContent = v.slice(i + 1);
+  blink();
+}
+
 function setValue(v) {
   inputEl.value = v;
-  typedEl.textContent = v;
-  blink();
+  draw();
 }
 
 function appendBlock(raw, out) {
@@ -251,10 +260,8 @@ function complete() {
   if (hits.length === 1) setValue(hits[0] + ' ');
 }
 
-inputEl.addEventListener('input', function () {
-  typedEl.textContent = inputEl.value;
-  blink();
-});
+inputEl.addEventListener('input', draw);
+document.addEventListener('selectionchange', draw);
 
 inputEl.addEventListener('keydown', function (e) {
   if (e.key === 'Enter') {
@@ -293,7 +300,7 @@ document.addEventListener('click', function (e) {
 
 window.addEventListener('resize', toBottom);
 
-blink();
+draw();
 inputEl.focus();
 toBottom();
 
