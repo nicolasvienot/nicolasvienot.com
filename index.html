@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Nicolas Vienot</title>
+    <meta name="description" content="Nicolas Vienot — Software engineer" />
+    <meta name="author" content="Nicolas Vienot" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0F0F0D" />
+
+    <link rel="canonical" href="https://nicolasvienot.com/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="nicolasvienot.com" />
+    <meta property="og:url" content="https://nicolasvienot.com/" />
+    <meta property="og:title" content="Nicolas Vienot" />
+    <meta property="og:description" content="Software engineer" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Nicolas Vienot" />
+    <meta name="twitter:description" content="Software engineer" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="screen" id="screen">
+      <label class="sheet" for="cmd">
+        <div class="header">Nicolas Vienot</div>
+        <div id="lines"></div>
+
+        <div class="promptline" id="promptline">
+          <span class="accent">~</span><span class="muted"> $ </span
+          ><span id="typed"></span
+          ><span class="cursor" id="cursor" aria-hidden="true"></span
+          ><input
+            id="cmd"
+            type="text"
+            aria-label="Terminal command"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            autofocus
+          />
+        </div>
+      </label>
+    </div>
+    <script src="/terminal.js"></script>
+  </body>
+</html>
