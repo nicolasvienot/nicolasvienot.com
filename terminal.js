@@ -31,7 +31,7 @@ var FILES = ['about.txt', 'contact.txt', 'projects/'];
 
 var COMMANDS = [
   'help', 'whoami', 'about', 'contact', 'email', 'github', 'linkedin',
-  'ls', 'cat', 'cd', 'pwd', 'time', 'date', 'echo',
+  'ls', 'cat', 'cd', 'chmod', 'pwd', 'time', 'date', 'echo',
   'history', 'clear', 'sudo', 'rm', 'exit'
 ];
 
@@ -41,7 +41,8 @@ function exec(raw, hist) {
   var parts = raw.trim().split(/\s+/);
   var cmd = (parts[0] || '').toLowerCase();
   var arg = parts.slice(1).join(' ');
-  var dir = arg.replace(/\/+$/, '');
+  var args = parts.slice(1).filter(function (p) { return p.charAt(0) !== '-'; });
+  var dir = (args[0] || '').replace(/\/+$/, '');
 
   switch (cmd) {
     case '': return [];
@@ -69,17 +70,23 @@ function exec(raw, hist) {
       return [t('ls: ' + dir + ': No such file or directory', 'muted')];
 
     case 'cat':
-      if (arg === 'about.txt') return ABOUT;
-      if (arg === 'contact.txt') return CONTACT;
-      if (!arg) return [t('usage: cat [file ...]', 'muted')];
-      if (arg === 'projects' || arg === 'projects/') return [t('cat: projects: Is a directory', 'muted')];
-      return [t('cat: ' + arg + ': No such file or directory', 'muted')];
+      if (!args.length) return [t('usage: cat [file ...]', 'muted')];
+      if (dir === 'about.txt') return ABOUT;
+      if (dir === 'contact.txt') return CONTACT;
+      if (dir === 'projects') return [t('cat: projects: Is a directory', 'muted')];
+      return [t('cat: ' + dir + ': No such file or directory', 'muted')];
 
     case 'cd':
       if (HOME.indexOf(dir) !== -1) return [];
       if (dir === 'projects') return [t('nothing in there yet.', 'muted')];
       if (FILES.indexOf(dir) !== -1) return [t('cd: not a directory: ' + dir, 'muted')];
       return [t('cd: no such file or directory: ' + dir, 'muted')];
+
+    case 'chmod':
+      if (args.length < 2) return [t('usage: chmod mode file ...', 'muted')];
+      var target = args[1].replace(/\/+$/, '');
+      if (target !== 'projects' && FILES.indexOf(target) === -1) return [t('chmod: ' + target + ': No such file or directory', 'muted')];
+      return [t('chmod: ' + target + ': Read-only file system', 'muted')];
 
     case 'pwd': return [t('/home/nico/osaka')];
 
@@ -160,6 +167,14 @@ function setValue(v) {
   blink();
 }
 
+function appendBlock(raw, out) {
+  var block = document.createElement('div');
+  block.className = 'block';
+  block.appendChild(renderLine({ kind: 'out', prompt: true, text: raw }));
+  out.forEach(function (l) { block.appendChild(renderLine(l)); });
+  linesEl.appendChild(block);
+}
+
 function run(raw) {
   var clean = raw.trim();
   var cmd = clean.split(/\s+/)[0].toLowerCase();
@@ -171,11 +186,7 @@ function run(raw) {
   if (cmd === 'clear') {
     linesEl.textContent = '';
   } else {
-    var block = document.createElement('div');
-    block.className = 'block';
-    block.appendChild(renderLine({ kind: 'out', prompt: true, text: raw }));
-    out.forEach(function (l) { block.appendChild(renderLine(l)); });
-    linesEl.appendChild(block);
+    appendBlock(raw, out);
   }
 
   setValue('');
@@ -227,6 +238,13 @@ inputEl.addEventListener('keydown', function (e) {
   } else if (e.key === 'l' && e.ctrlKey) {
     e.preventDefault();
     linesEl.textContent = '';
+    toBottom();
+  } else if (e.key === 'c' && e.ctrlKey) {
+    if (window.getSelection().toString()) return;
+    e.preventDefault();
+    appendBlock(inputEl.value + '^C', []);
+    hIndex = -1;
+    setValue('');
     toBottom();
   }
 });
