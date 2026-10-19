@@ -29,9 +29,29 @@ var CONTACT = [lk('email     ', 'email'), lk('github    ', 'github'), lk('linked
 
 var FILES = ['about.txt', 'contact.txt', 'projects/'];
 
+var MTIME = 'Oct 20 00:31';
+
+function bytes(lines) {
+  var text = lines.map(function (l) { return (l.label || '') + l.text; }).join('\n') + '\n';
+  return new TextEncoder().encode(text).length;
+}
+
+function entries() {
+  return [
+    ['-rw-r--r--', 1, bytes(ABOUT), 'about.txt'],
+    ['-rw-r--r--', 1, bytes(CONTACT), 'contact.txt'],
+    ['drwxr-xr-x', 2, 64, 'projects']
+  ];
+}
+
+function longRow(e, human) {
+  var n = human ? (e[2] < 1024 ? e[2] + 'B' : (e[2] / 1024).toFixed(1) + 'K') : String(e[2]);
+  return t(e[0] + ' ' + String(e[1]).padStart(2) + ' nico  staff ' + n.padStart(6) + ' ' + MTIME + ' ' + e[3]);
+}
+
 var COMMANDS = [
   'help', 'whoami', 'about', 'contact', 'email', 'github', 'linkedin',
-  'ls', 'cat', 'cd', 'chmod', 'pwd', 'time', 'date', 'echo',
+  'ls', 'll', 'cat', 'cd', 'chmod', 'pwd', 'time', 'date', 'echo',
   'history', 'clear', 'sudo', 'rm', 'exit'
 ];
 
@@ -42,6 +62,7 @@ function exec(raw, hist) {
   var cmd = (parts[0] || '').toLowerCase();
   var arg = parts.slice(1).join(' ');
   var args = parts.slice(1).filter(function (p) { return p.charAt(0) !== '-'; });
+  var flags = parts.slice(1).filter(function (p) { return p.charAt(0) === '-' && p.charAt(1) !== '-'; }).join('');
   var dir = (args[0] || '').replace(/\/+$/, '');
 
   switch (cmd) {
@@ -64,9 +85,24 @@ function exec(raw, hist) {
     case 'linkedin': return [CONTACT[2]];
 
     case 'ls':
-      if (dir === 'projects') return [t('(empty)', 'muted')];
-      if (HOME.indexOf(dir) !== -1) return [t(FILES.join('   '))];
-      if (FILES.indexOf(dir) !== -1) return [t(dir)];
+    case 'll':
+      var long = cmd === 'll' || flags.indexOf('l') !== -1;
+      var human = flags.indexOf('h') !== -1;
+      var list = entries();
+
+      if (dir === 'projects') return long ? [t('total 0')] : [t('(empty)', 'muted')];
+
+      if (HOME.indexOf(dir) !== -1) {
+        if (!long) return [t(FILES.join('   '))];
+        if (flags.indexOf('a') !== -1) list = [['drwxr-xr-x', 5, 160, '.'], ['drwxr-xr-x', 20, 640, '..']].concat(list);
+        return [t('total 16')].concat(list.map(function (e) { return longRow(e, human); }));
+      }
+
+      if (FILES.indexOf(dir) !== -1) {
+        if (!long) return [t(dir)];
+        return list.filter(function (e) { return e[3] === dir; }).map(function (e) { return longRow(e, human); });
+      }
+
       return [t('ls: ' + dir + ': No such file or directory', 'muted')];
 
     case 'cat':
@@ -201,7 +237,7 @@ function run(raw) {
 
 function complete() {
   var v = inputEl.value;
-  var m = v.match(/^(cat|ls|cd)\s+(\S*)$/);
+  var m = v.match(/^(cat|ls|ll|cd)\s+(\S*)$/);
   var hits;
 
   if (m) {
